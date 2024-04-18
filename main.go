@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
@@ -18,7 +17,6 @@ type Produk struct {
 }
 
 func main() {
-	uuid.New().String()
 	// 1 - menghubungkan golang dengan postgres
 	connURI := "postgresql://postgres:postgres@localhost:5432?sslmode=disable"
 	db, err := sql.Open("pgx", connURI)

@@ -2,10 +2,7 @@ module github.com/fastcampus-backend-golang/database-sql
 
 go 1.22.1
 
-require (
-	github.com/google/uuid v1.6.0
-	github.com/jackc/pgx/v5 v5.4.3
-)
+require github.com/jackc/pgx/v5 v5.4.3
 
 require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
