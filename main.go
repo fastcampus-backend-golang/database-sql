@@ -18,7 +18,7 @@ type Produk struct {
 
 func main() {
 	// 1 - menghubungkan golang dengan postgres
-	connURI := "postgresql://postgres:postgres@localhost:5432?sslmode=disable"
+	connURI := "postgresql://postgres:password@localhost:5432/database?sslmode=disable"
 	db, err := sql.Open("pgx", connURI)
 	if err != nil {
 		fmt.Printf("Gagal menghubungkan ke database: %v\n", err)
@@ -43,10 +43,10 @@ func main() {
 	// 3 - membuat tabel
 	_, err = db.Exec(`
 	CREATE TABLE IF NOT EXISTS produk (
-	    id SERIAL PRIMARY KEY,
-	    nama VARCHAR(255),
-	    kategori VARCHAR(50),
-	    harga INT
+		id SERIAL PRIMARY KEY,
+		nama VARCHAR(255),
+		kategori VARCHAR(50),
+		harga INT
 	);
 	`)
 	if err != nil {
@@ -54,34 +54,41 @@ func main() {
 		os.Exit(1)
 	}
 
+	fmt.Println("Table berhasil dibuat")
+
 	// 4 - menambah data
 	_, err = db.Exec(`
 	INSERT INTO produk (nama, kategori, harga)
-	VALUES ($1, $2, $3)
+	VALUES ($1, $2, $3);
 	`, "Kertas A4", "Kertas", 35000)
 	if err != nil {
 		fmt.Printf("Gagal mengisi tabel: %v\n", err)
 		os.Exit(1)
 	}
 
+	fmt.Println("Data berhasil ditambahkan")
+
 	// 5 - mengambil 1 data
-	row := db.QueryRow(`SELECT id, nama, kategori, harga FROM produk WHERE id = $1`, 1)
+	row := db.QueryRow(`SELECT id, nama, kategori, harga FROM produk WHERE id = $1;`, 3)
 	if row == nil {
-		fmt.Println("Gagal mengambil data dari tabel")
+		fmt.Printf("Gagal membaca data dari tabel: %v\n", err)
+		os.Exit(1)
 	}
 
 	var produk Produk
 	err = row.Scan(&produk.ID, &produk.Nama, &produk.Kategori, &produk.Harga)
 	if err != nil {
-		fmt.Printf("Gagal membaca data baris: %v\n", err)
+		fmt.Printf("Gagal mengambil data: %v\n", err)
+		os.Exit(1)
 	}
 
 	fmt.Println(produk)
 
 	// 6 - mengambil banyak data
-	rows, err := db.Query(`SELECT id, nama, kategori, harga FROM produk`)
+	rows, err := db.Query(`SELECT id, nama, kategori, harga FROM produk;`)
 	if err != nil || rows == nil {
 		fmt.Printf("Gagal mengambil data: %v\n", err)
+		os.Exit(1)
 	}
 
 	var produkSlice []Produk
@@ -89,7 +96,8 @@ func main() {
 		var produk Produk
 		err = rows.Scan(&produk.ID, &produk.Nama, &produk.Kategori, &produk.Harga)
 		if err != nil {
-			fmt.Printf("Gagal membaca data baris: %v\n", err)
+			fmt.Printf("Gagal mengambil data: %v\n", err)
+			os.Exit(1)
 		}
 
 		produkSlice = append(produkSlice, produk)
@@ -101,24 +109,25 @@ func main() {
 	_, err = db.Exec(`
 	UPDATE produk
 	SET nama = $1, kategori = $2, harga = $3
-	WHERE id = $4
+	WHERE id = $4;
 	`, "New Kertas A5", "Kertas", 30000, 1)
 	if err != nil {
 		fmt.Printf("Gagal mengupdate data: %v\n", err)
 		os.Exit(1)
 	}
-	fmt.Println("Data berhasil diupdate")
+	fmt.Println("Berhasil memperbarui data")
 
 	// 8 - menghapus data
 	_, err = db.Exec(`
 	DELETE FROM produk
-	WHERE id = $1
+	WHERE id = $1;
 	`, 1)
 	if err != nil {
 		fmt.Printf("Gagal menghapus data: %v\n", err)
 		os.Exit(1)
 	}
-	fmt.Println("Data berhasil dihapus")
+
+	fmt.Println("Berhasil menghapus data")
 
 	// 9 - transaction
 	tx, err := db.Begin()
